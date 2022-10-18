@@ -1,0 +1,7 @@
+[CentOS]
+192.168.122.88 ansible_user=userver1
+
+[Ubuntu]
+192.168.122.119 ansible_user=server1-gui
+
+

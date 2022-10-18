@@ -1,0 +1,46 @@
+
+# Installing dependencies and libraries
+yum install -y httpd php epel-release gcc glibc glibc-common make gd gd-devel net-snmp
+
+# Adding Nagiosas user
+useradd nagios
+groupadd nagcmd 
+usermod -G nagcmd nagios
+usermod -G nagcmd apache
+
+# Downloading and creating a directory where to save the downlaoded files.
+mkdir ~/nagios
+cd ~/nagios
+wget http://prdownloads.sourceforge.net/sourceforge/nagios-4.0.7.tar.gz
+wget http://www.nagios-plugins.org/download/nagios-plugins-2.0.3.tar.gz
+
+# Extracting the downloaded tar.gz files.
+tar -zxvf nagios-4.0.7.tar.gz
+tar -zxvf nagios-plugins-2.0.3.tar.gz
+
+# Installing nagios 4.0.7
+cd nagios-4.0.7
+./configure --with-commnd-group=nagcmd
+sudo make all
+sudo make install
+sudo make install-init
+sudo make install-commandmode
+sudo make install-config
+sudo make install-webconf
+sudo htpasswd -s -c /usr/local/nagios/etc/htpasswd.users nagiosadmin
+
+# Starting nagios in start in boot time
+/usr/local/nagios/bin/nagios/ -v /usr/local/nagios/etc/nagios.cfg
+
+# Add the service to run on boot 
+chkconfig --add nagios
+chkconfig --level 35 nagios on
+
+# Starting service
+systemctl start nagios.service
+
+# Reboot Task
+
+Access nagios by http://Ip-address/nagios
+
+

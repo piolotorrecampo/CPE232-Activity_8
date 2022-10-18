@@ -1,0 +1,80 @@
+- name: Installing nagios dependecies and libraries
+  tags: dependecies, libraries
+  dnf:
+    name:
+      - httpd 
+      - php 
+      - epel-release 
+      - gcc 
+      - glibc 
+      - glibc-common 
+      - make 
+      - gd 
+      - gd-devel 
+      - net-snmp
+    state: latest
+  when: ansible_distribution == "CentOS"
+  
+- name: Adding Nagios user and nagcmd group
+  shell: |
+    useradd nagios
+    groupadd nagcmd
+    usermod -G nagcmd nagios
+    usermod -G nagcmd apache
+
+- name: Creating a directory where the downloded file will be stored
+  file:
+    path: ~/nagios
+    state: directory
+
+- name: Downloading and extracting nagios
+  unarchive:
+    src: http://prdownloads.sourceforge.net/sourceforge/nagios-4.0.7.tar.gz
+    dest: ~/nagios
+    remote_src: yes
+    mode: 0755
+    owner: root
+    group: root
+
+- name: Downloading and extracting nagios plugins
+  unarchive:
+    src: http://www.nagios-plugins.org/download/nagios-plugins-2.0.3.tar.gz
+    dest: ~/nagios
+    remote_src: yes
+    mode: 0755
+    owner: root
+    group: root
+
+- name: Installing nagios and its plugins
+  shell: |
+    cd nagios-4.0.7
+    ./configure --with-commnd-group=nagcmd
+    sudo make install
+    make install-init
+    make install-commandmode
+    make install-config
+    make install-webconf
+    htpasswd -s -c /usr/local/nagios/etc/htpasswd.users nagiosadmin
+
+- name: Starting nagios in boot time
+  shell: |
+    /usr/local/nagios/bin/nagios/ -v /usr/local/nagios/etc/nagios.cfg
+
+- name: Add service to run in boot
+  shell: | 
+    chkconfig --add nagios
+    chkconfig --level 35 nagios on
+
+- name: Making sure that nagios is started and enabled
+  systemd:
+    name: "nagios"
+    state: started
+    enabled: enabled
+
+  
+ 
+
+    
+
+
+
